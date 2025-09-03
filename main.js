@@ -16,16 +16,27 @@ const MIN_SHORTEST_EDGE_PX = 300;
 
 const MIDTONE_CONTRAST_FACTOR = 1.5;
 
-// New: Default Hex Colors
+// Default Hex Colors
 const DEFAULT_DARK_HEX = "#1b602f";
 const DEFAULT_LIGHT_HEX = "#f784c5";
 
 // HTMLImageElement for loading
 const originalImage = new Image(); 
 
-// Regular expression to validate a 3 or 6 digit hex color code (without requiring # initially)
-const hexRegex = /^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/; // Modified regex: no optional #
+// Regular expression to validate a 3 or 6 digit hex color code (optionally with '#')
+// This regex allows 'abc', '#abc', 'aabbcc', '#aabbcc'
+const hexRegex = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
+// Function to normalize hex code: just adds '#' if missing and lowercases, DOES NOT expand 3-digit to 6-digit.
+// Returns null if invalid.
+function normalizeHexForDisplay(hex) {
+    if (!hex) return null; // Handle empty input
+    const match = hex.match(hexRegex);
+    if (match) {
+        return '#' + match[1].toLowerCase(); // Ensure lowercase and starts with '#', but keep original length (3 or 6)
+    }
+    return null; // Invalid hex
+}
 
 // --- Wrap all DOM-dependent code in DOMContentLoaded listener ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -35,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const darkColorTextInput = document.getElementById('darkColorText'); // Text input for dark hex
     const lightColorInput = document.getElementById('lightColor'); // Color picker for light
     const lightColorTextInput = document.getElementById('lightColorText'); // Text input for light hex
-    const resetColorsButton = document.getElementById('resetColorsButton'); // New: Reset button
+    const resetColorsButton = document.getElementById('resetColorsButton'); // Reset button
 
     const originalCanvas = document.getElementById('originalCanvas');
     const normalDuotoneCanvas = document.getElementById('normalDuotoneCanvas');
@@ -126,45 +137,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners for Color Inputs (Synchronization) ---
 
-    // Dark Color Picker changes
+    // Dark Color Picker changes: Update text input, then process
     darkColorInput.addEventListener('input', (event) => {
-        darkColorTextInput.value = event.target.value; // Sync text input
+        // Color picker value is always #RRGGBB
+        darkColorTextInput.value = event.target.value; 
         processImage();
     });
 
-    // Dark Color Text Input changes
+    // Dark Color Text Input changes: Validate, update color picker, then process
     darkColorTextInput.addEventListener('input', (event) => {
-        let hex = event.target.value;
-        // Check for 3 or 6 digit hex, optionally without #
-        if (hexRegex.test(hex)) { 
-            const normalizedHex = hex.startsWith('#') ? hex : '#' + hex;
-            darkColorInput.value = normalizedHex; // Sync color picker
+        const hex = event.target.value.trim(); // Trim whitespace
+        const normalizedHexForDisplay = normalizeHexForDisplay(hex); // Get normalized string for display/picker
+
+        if (normalizedHexForDisplay) { 
+            // Valid hex: Update both inputs and process
+            darkColorInput.value = normalizedHexForDisplay; // Sync color picker
+            darkColorTextInput.value = normalizedHexForDisplay; // Update text input with normalized value (e.g., add #)
             processImage();
+        } else if (hex === '' || hex === '#') { 
+            // Allow empty or just '#' while typing without immediate error
+            darkColorInput.value = '#000000'; // Set picker to black as a safe fallback visually
+            // Do not process image immediately on incomplete/invalid text input
         } else {
             console.warn(`Invalid hex code entered for dark color: ${hex}`);
-            // Optionally, provide visual feedback for invalid input, e.g., highlight the text input
+            // Optionally, provide visual feedback for invalid input, e.g., add a class to highlight
+            // e.g., darkColorTextInput.classList.add('is-invalid');
         }
     });
 
-    // Light Color Picker changes
+    // Light Color Picker changes: Update text input, then process
     lightColorInput.addEventListener('input', (event) => {
-        lightColorTextInput.value = event.target.value; // Sync text input
+        // Color picker value is always #RRGGBB
+        lightColorTextInput.value = event.target.value; 
         processImage();
     });
 
-    // Light Color Text Input changes
+    // Light Color Text Input changes: Validate, update color picker, then process
     lightColorTextInput.addEventListener('input', (event) => {
-        let hex = event.target.value;
-        if (hexRegex.test(hex)) { 
-            const normalizedHex = hex.startsWith('#') ? hex : '#' + hex;
-            lightColorInput.value = normalizedHex; // Sync color picker
+        const hex = event.target.value.trim();
+        const normalizedHexForDisplay = normalizeHexForDisplay(hex);
+        if (normalizedHexForDisplay) { 
+            lightColorInput.value = normalizedHexForDisplay; // Sync color picker
+            lightColorTextInput.value = normalizedHexForDisplay; // Update text input with normalized value
             processImage();
+        } else if (hex === '' || hex === '#') {
+            lightColorInput.value = '#000000'; // Set picker to black as a safe fallback visually
         } else {
             console.warn(`Invalid hex code entered for light color: ${hex}`);
+            // Optionally, add a visual cue
+            // e.g., lightColorTextInput.classList.add('is-invalid');
         }
     });
 
-    // New: Reset Colors Button Event Listener
+    // Reset Colors Button Event Listener
     resetColorsButton.addEventListener('click', () => {
         console.log("DEBUG: Reset Colors button clicked.");
         darkColorInput.value = DEFAULT_DARK_HEX;
@@ -225,8 +250,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Get current hex values from input fields
-        const currentDarkHex = darkColorInput.value; // Read from color picker (or text input after sync)
-        const currentLightHex = lightColorInput.value; // Read from color picker (or text input after sync)
+        // We now read the normalized value from the text input after it's been synced
+        const currentDarkHex = darkColorTextInput.value; 
+        const currentLightHex = lightColorTextInput.value;
+        
+        // Final validation before processing. Uses hexRegex.test directly.
+        if (!hexRegex.test(currentDarkHex) || !hexRegex.test(currentLightHex)) {
+            console.error("DEBUG: processImage() aborted: One or both hex colors are invalid (unnormalized).");
+            // If the text inputs are displaying invalid text, don't try to process
+            return; 
+        }
+
         console.log(`DEBUG: Using colors - Dark: ${currentDarkHex}, Light: ${currentLightHex}`);
 
 
@@ -257,15 +291,16 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("DEBUG: Step 3 (Contrast) complete.");
 
         // Step 4: Generate Normal Duotone
-        const darkRgbNormal = hexToRgb(currentDarkHex); // Use current input value
-        const lightRgbNormal = hexToRgb(currentLightHex); // Use current input value
+        // hexToRgb already handles #RGB and #RRGGBB correctly.
+        const darkRgbNormal = hexToRgb(currentDarkHex); 
+        const lightRgbNormal = hexToRgb(currentLightHex); 
         const normalDuotoneImageData = applyDuotone(new ImageData(new Uint8ClampedArray(finalContrastImageData.data), finalContrastImageData.width, finalContrastImageData.height), darkRgbNormal, lightRgbNormal);
         drawImageDataToCanvas(normalDuotoneCanvas, normalDuotoneImageData);
         console.log("DEBUG: Step 4 (Normal Duotone) complete.");
 
         // Step 5: Generate Inverted Duotone
-        const darkRgbInverted = hexToRgb(currentLightHex); // Swap current input values for inverse
-        const lightRgbInverted = hexToRgb(currentDarkHex); // Swap current input values for inverse
+        const darkRgbInverted = hexToRgb(currentLightHex); 
+        const lightRgbInverted = hexToRgb(currentDarkHex); 
         const invertedDuotoneImageData = applyDuotone(new ImageData(new Uint8ClampedArray(finalContrastImageData.data), finalContrastImageData.width, finalContrastImageData.height), darkRgbInverted, lightRgbInverted);
         drawImageDataToCanvas(invertedDuotoneCanvas, invertedDuotoneImageData);
         console.log("DEBUG: Step 5 (Inverted Duotone) complete.");
