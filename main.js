@@ -14,18 +14,29 @@ import { applyDuotone } from './modules/filters/duotone.js';
 const MAX_LONGEST_EDGE_PX = 1000;
 const MIN_SHORTEST_EDGE_PX = 300;
 
-const HEX_COLOR_FOR_DARK = "#1b602f";
-const HEX_COLOR_FOR_LIGHT = "#f784c5";
 const MIDTONE_CONTRAST_FACTOR = 1.5;
 
-// --- HTMLImageElement for loading ---
+// New: Default Hex Colors
+const DEFAULT_DARK_HEX = "#1b602f";
+const DEFAULT_LIGHT_HEX = "#f784c5";
+
+// HTMLImageElement for loading
 const originalImage = new Image(); 
+
+// Regular expression to validate a 3 or 6 digit hex color code (without requiring # initially)
+const hexRegex = /^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/; // Modified regex: no optional #
+
 
 // --- Wrap all DOM-dependent code in DOMContentLoaded listener ---
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Elements ---
     const imageUpload = document.getElementById('imageUpload');
-    // const applyFilterButton = document.getElementById('applyFilterButton'); // Removed
+    const darkColorInput = document.getElementById('darkColor'); // Color picker for dark
+    const darkColorTextInput = document.getElementById('darkColorText'); // Text input for dark hex
+    const lightColorInput = document.getElementById('lightColor'); // Color picker for light
+    const lightColorTextInput = document.getElementById('lightColorText'); // Text input for light hex
+    const resetColorsButton = document.getElementById('resetColorsButton'); // New: Reset button
+
     const originalCanvas = document.getElementById('originalCanvas');
     const normalDuotoneCanvas = document.getElementById('normalDuotoneCanvas');
     const invertedDuotoneCanvas = document.getElementById('invertedDuotoneCanvas');
@@ -68,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     originalImage.onerror = handleImageError;
 
 
-    // --- Event Handlers ---
+    // --- Event Handlers for Image Upload ---
 
     imageUpload.addEventListener('change', (event) => {
         console.log("DEBUG: Image upload change event fired.");
@@ -113,7 +124,56 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // The applyFilterButton click listener is now completely removed.
+    // --- Event Listeners for Color Inputs (Synchronization) ---
+
+    // Dark Color Picker changes
+    darkColorInput.addEventListener('input', (event) => {
+        darkColorTextInput.value = event.target.value; // Sync text input
+        processImage();
+    });
+
+    // Dark Color Text Input changes
+    darkColorTextInput.addEventListener('input', (event) => {
+        let hex = event.target.value;
+        // Check for 3 or 6 digit hex, optionally without #
+        if (hexRegex.test(hex)) { 
+            const normalizedHex = hex.startsWith('#') ? hex : '#' + hex;
+            darkColorInput.value = normalizedHex; // Sync color picker
+            processImage();
+        } else {
+            console.warn(`Invalid hex code entered for dark color: ${hex}`);
+            // Optionally, provide visual feedback for invalid input, e.g., highlight the text input
+        }
+    });
+
+    // Light Color Picker changes
+    lightColorInput.addEventListener('input', (event) => {
+        lightColorTextInput.value = event.target.value; // Sync text input
+        processImage();
+    });
+
+    // Light Color Text Input changes
+    lightColorTextInput.addEventListener('input', (event) => {
+        let hex = event.target.value;
+        if (hexRegex.test(hex)) { 
+            const normalizedHex = hex.startsWith('#') ? hex : '#' + hex;
+            lightColorInput.value = normalizedHex; // Sync color picker
+            processImage();
+        } else {
+            console.warn(`Invalid hex code entered for light color: ${hex}`);
+        }
+    });
+
+    // New: Reset Colors Button Event Listener
+    resetColorsButton.addEventListener('click', () => {
+        console.log("DEBUG: Reset Colors button clicked.");
+        darkColorInput.value = DEFAULT_DARK_HEX;
+        darkColorTextInput.value = DEFAULT_DARK_HEX;
+        lightColorInput.value = DEFAULT_LIGHT_HEX;
+        lightColorTextInput.value = DEFAULT_LIGHT_HEX;
+        processImage(); // Re-process with default colors
+    });
+
 
     // Download functionality for all buttons with class 'download-button'
     document.addEventListener('click', (event) => {
@@ -161,9 +221,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if an image is actually loaded and ready before processing
         if (!originalImage.src || !originalImage.complete || originalImage.naturalWidth === 0) {
             console.error("DEBUG: processImage() aborted: No valid image loaded.", {src: originalImage.src, complete: originalImage.complete, naturalWidth: originalImage.naturalWidth});
-            alert("No valid image loaded to process. Please upload an image first.");
-            return;
+            return; // Exit silently if no image is loaded
         }
+
+        // Get current hex values from input fields
+        const currentDarkHex = darkColorInput.value; // Read from color picker (or text input after sync)
+        const currentLightHex = lightColorInput.value; // Read from color picker (or text input after sync)
+        console.log(`DEBUG: Using colors - Dark: ${currentDarkHex}, Light: ${currentLightHex}`);
+
 
         // --- Core Processing Pipeline ---
 
@@ -192,15 +257,15 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("DEBUG: Step 3 (Contrast) complete.");
 
         // Step 4: Generate Normal Duotone
-        const darkRgbNormal = hexToRgb(HEX_COLOR_FOR_DARK);
-        const lightRgbNormal = hexToRgb(HEX_COLOR_FOR_LIGHT);
+        const darkRgbNormal = hexToRgb(currentDarkHex); // Use current input value
+        const lightRgbNormal = hexToRgb(currentLightHex); // Use current input value
         const normalDuotoneImageData = applyDuotone(new ImageData(new Uint8ClampedArray(finalContrastImageData.data), finalContrastImageData.width, finalContrastImageData.height), darkRgbNormal, lightRgbNormal);
         drawImageDataToCanvas(normalDuotoneCanvas, normalDuotoneImageData);
         console.log("DEBUG: Step 4 (Normal Duotone) complete.");
 
         // Step 5: Generate Inverted Duotone
-        const darkRgbInverted = hexToRgb(HEX_COLOR_FOR_LIGHT); // Swap colors for inverse
-        const lightRgbInverted = hexToRgb(HEX_COLOR_FOR_DARK); // Swap colors for inverse
+        const darkRgbInverted = hexToRgb(currentLightHex); // Swap current input values for inverse
+        const lightRgbInverted = hexToRgb(currentDarkHex); // Swap current input values for inverse
         const invertedDuotoneImageData = applyDuotone(new ImageData(new Uint8ClampedArray(finalContrastImageData.data), finalContrastImageData.width, finalContrastImageData.height), darkRgbInverted, lightRgbInverted);
         drawImageDataToCanvas(invertedDuotoneCanvas, invertedDuotoneImageData);
         console.log("DEBUG: Step 5 (Inverted Duotone) complete.");
