@@ -47,9 +47,14 @@ main {
     margin-bottom: 20px;
 }
 
-.controls {
+.controls { /* Existing .controls style */
     margin-bottom: 30px;
     text-align: center;
+}
+
+.controls.reset-controls {
+    margin-top: 20px; /* Add some space above the reset button */
+    margin-bottom: 30px; /* Maintain bottom space */
 }
 
 .button {
@@ -70,13 +75,22 @@ main {
 
 button {
     padding: 12px 25px;
-    background-color: #28a745;
+    background-color: #28a745; /* Default button green */
     color: white;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 1.1em;
     transition: background-color 0.3s ease;
+}
+
+button#resetColorsButton { /* Specific style for the reset button */
+    background-color: #ffc107; /* A yellow/orange color */
+    color: #343a40; /* Darker text for contrast */
+}
+
+button#resetColorsButton:hover {
+    background-color: #e0a800; /* Darker yellow on hover */
 }
 
 button:hover:not(:disabled) {
@@ -87,6 +101,78 @@ button:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
 }
+
+/* Styles for color selectors */
+.color-selectors {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 20px;
+    margin-bottom: 10px; /* Reduced bottom margin here as reset button has its own margin */
+    flex-wrap: wrap;
+}
+
+.color-input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-input-group label {
+    font-weight: bold;
+    color: #495057;
+}
+
+.color-input-group input[type="color"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s ease-in-out;
+}
+
+.color-input-group input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+.color-input-group input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+.color-input-group input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 50%;
+}
+.color-input-group input[type="color"]:hover {
+    transform: scale(1.1);
+}
+
+/* Style for hex text input */
+.color-input-group input[type="text"] {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    text-align: center;
+    font-family: monospace;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.color-input-group input[type="text"]:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
 
 #imageResults {
     display: grid;

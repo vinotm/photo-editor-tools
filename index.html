@@ -11,6 +11,7 @@
         <h1>Image Filters Studio</h1>
         <nav>
             <a href="index.html" class="active">Duotone Filter</a>
+            <!-- Future: <a href="rgb-split.html">RGB Split</a> -->
         </nav>
     </header>
 
@@ -22,7 +23,26 @@
             <div class="controls">
                 <label for="imageUpload" class="button">Upload Image</label>
                 <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                <!-- 'Apply Duotone Filter' button is correctly removed here -->
+            </div>
+
+            <div class="color-selectors">
+                <div class="color-input-group">
+                    <label for="darkColor">Shadows Color:</label>
+                    <input type="color" id="darkColor" value="#1b602f">
+                    <!-- Removed pattern attribute here -->
+                    <input type="text" id="darkColorText" value="#1b602f" maxlength="7">
+                </div>
+                <div class="color-input-group">
+                    <label for="lightColor">Highlights Color:</label>
+                    <input type="color" id="lightColor" value="#f784c5">
+                    <!-- Removed pattern attribute here -->
+                    <input type="text" id="lightColorText" value="#f784c5" maxlength="7">
+                </div>
+            </div>
+
+            <!-- New Reset Button -->
+            <div class="controls reset-controls">
+                <button id="resetColorsButton">Reset to Brave Pink Hero Green</button>
             </div>
 
             <div id="imageResults">
@@ -30,25 +50,27 @@
                     <h3>Original (Resized)</h3>
                     <canvas id="originalCanvas"></canvas>
                     <button class="download-button" data-canvas-id="originalCanvas" data-filename-prefix="original_resized" data-file-type="png">Download PNG</button>
-                    <button class="download-button" data-canvas-id="originalCanvas" data-filename-prefix="original_resized" data-file-type="jpeg" data-quality="0.85">Download JPG (85%)</button>
+                    <!-- Removed (85%) text -->
+                    <button class="download-button" data-canvas-id="originalCanvas" data-filename-prefix="original_resized" data-file-type="jpeg" data-quality="0.85">Download JPG</button>
                 </div>
                 <div class="image-section">
                     <h3>Normal Duotone</h3>
                     <canvas id="normalDuotoneCanvas"></canvas>
                     <button class="download-button" data-canvas-id="normalDuotoneCanvas" data-filename-prefix="normal_duotone" data-file-type="png">Download PNG</button>
-                    <button class="download-button" data-canvas-id="normalDuotoneCanvas" data-filename-prefix="normal_duotone" data-file-type="jpeg" data-quality="0.85">Download JPG (85%)</button>
+                    <!-- Removed (85%) text -->
+                    <button class="download-button" data-canvas-id="normalDuotoneCanvas" data-filename-prefix="normal_duotone" data-file-type="jpeg" data-quality="0.85">Download JPG</button>
                 </div>
                 <div class="image-section">
                     <h3>Inverted Duotone</h3>
                     <canvas id="invertedDuotoneCanvas"></canvas>
                     <button class="download-button" data-canvas-id="invertedDuotoneCanvas" data-filename-prefix="inverted_duotone" data-file-type="png">Download PNG</button>
-                    <button class="download-button" data-canvas-id="invertedDuotoneCanvas" data-filename-prefix="inverted_duotone" data-file-type="jpeg" data-quality="0.85">Download JPG (85%)</button>
+                    <!-- Removed (85%) text -->
+                    <button class="download-button" data-canvas-id="invertedDuotoneCanvas" data-filename-prefix="inverted_duotone" data-file-type="jpeg" data-quality="0.85">Download JPG</button>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- The main JavaScript entry point, declared as a module -->
     <script type="module" src="main.js"></script>
 </body>
 </html>
