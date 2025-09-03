@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filters - Duotone</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Image Filters Studio</h1>
+        <nav>
+            <!-- Future: Add navigation links here -->
+            <a href="index.html" class="active">Duotone Filter</a>
+            <!-- <a href="rgb-split.html">RGB Split</a> -->
+            <!-- <a href="pixelate.html">Pixelate</a> -->
+        </nav>
+    </header>
+
+    <main>
+        <section class="filter-section">
+            <h2>Duotone Filter</h2>
+            <p>Upload an image to apply a two-color gradient map. All processing is done locally in your browser for privacy!</p>
+
+            <div class="controls">
+                <label for="imageUpload" class="button">Upload Image</label>
+                <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                <button id="applyFilterButton" disabled>Apply Duotone Filter</button>
+            </div>
+
+            <div id="imageResults">
+                <div class="image-section">
+                    <h3>Original (Resized)</h3>
+                    <canvas id="originalCanvas"></canvas>
+                    <button class="download-button" data-canvas-id="originalCanvas" data-filename-prefix="original_resized" data-file-type="png">Download PNG</button>
+                    <button class="download-button" data-canvas-id="originalCanvas" data-filename-prefix="original_resized" data-file-type="jpeg" data-quality="0.85">Download JPG (85%)</button>
+                </div>
+                <div class="image-section">
+                    <h3>Normal Duotone</h3>
+                    <canvas id="normalDuotoneCanvas"></canvas>
+                    <button class="download-button" data-canvas-id="normalDuotoneCanvas" data-filename-prefix="normal_duotone" data-file-type="png">Download PNG</button>
+                    <button class="download-button" data-canvas-id="normalDuotoneCanvas" data-filename-prefix="normal_duotone" data-file-type="jpeg" data-quality="0.85">Download JPG (85%)</button>
+                </div>
+                <div class="image-section">
+                    <h3>Inverted Duotone</h3>
+                    <canvas id="invertedDuotoneCanvas"></canvas>
+                    <button class="download-button" data-canvas-id="invertedDuotoneCanvas" data-filename-prefix="inverted_duotone" data-file-type="png">Download PNG</button>
+                    <button class="download-button" data-canvas-id="invertedDuotoneCanvas" data-filename-prefix="inverted_duotone" data-file-type="jpeg" data-quality="0.85">Download JPG (85%)</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- The main JavaScript entry point, declared as a module -->
+    <script type="module" src="main.js"></script>
+</body>
+</html>
